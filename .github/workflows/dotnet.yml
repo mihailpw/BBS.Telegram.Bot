@@ -1,0 +1,27 @@
+name: publish
+
+on:
+  push:
+    branches: [ master ]
+
+env:
+  DOTNET_VERSION: '6.0.x'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: dotnet_publish
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup Dotnet
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Pack
+      run: dotnet pack ./src -c release -o ./package /property:PackageVersion=$(cat PackageVersion)
+
+    - name: Publish
+      run: dotnet nuget push ./package/*.nupkg -k "${{ secrets.NUGET_TOKEN }}" -s https://api.nuget.org/v3/index.json
